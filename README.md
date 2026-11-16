@@ -8,6 +8,14 @@ Detect the language of HTML or plain text and translate HTML with Google or Micr
 > [!WARNING]
 > Translation sends content to undocumented Google or Microsoft endpoints that require no API key and may change or become unavailable.
 
+## Install
+
+Install `n8n-nodes-html-tools` through **Settings → Community Nodes** in self-hosted n8n, or use npm in your n8n community-node directory.
+
+```sh
+npm i n8n-nodes-html-tools
+```
+
 ## Features
 
 Use the two nodes independently or combine language detection with HTML translation.
