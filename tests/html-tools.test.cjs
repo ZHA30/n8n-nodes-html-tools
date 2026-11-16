@@ -46,7 +46,7 @@ test('translation preserves inline links, protected content, attributes and frag
 
 test('bilingual content stays inside list items and table cells without duplicate IDs', async () => {
 	const result = await translateHtml(
-		'<ul><li>Hello <a id="link" href="#link">world</a></li></ul><table><tr><td>Hello world</td></tr></table>',
+		'<p>Hello world</p><ul><li>Hello <a id="link" href="#link">world</a></li></ul><table><tr><td>Hello world</td></tr></table>',
 		translate,
 		{ ...options, bilingual: true },
 	);
@@ -55,6 +55,11 @@ test('bilingual content stays inside list items and table cells without duplicat
 	assert.equal(doc.querySelectorAll('li').length, 1);
 	assert.equal(doc.querySelectorAll('td').length, 1);
 	assert.equal(doc.querySelectorAll('#link').length, 1);
+	for (const translation of doc.querySelectorAll('.html-tools-translation')) {
+		assert.equal(translation.previousSibling.localName, 'br');
+		assert.equal(translation.hasAttribute('style'), false);
+	}
+	assert.equal(doc.querySelectorAll('br').length, 3);
 	assert.equal(doc.querySelector('li > .html-tools-translation').textContent, '你好 世界');
 	assert.equal(doc.querySelector('td > .html-tools-translation').lang, 'zh-CN');
 	assert.ok(doc.querySelector('li').textContent.startsWith('Hello world'));

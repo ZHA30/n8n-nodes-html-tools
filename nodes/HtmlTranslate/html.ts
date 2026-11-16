@@ -229,13 +229,14 @@ export async function translateHtml(
 				const wrapper = doc.createElement('span');
 				wrapper.className = 'html-tools-translation';
 				wrapper.lang = options.target;
-				wrapper.style.display = 'block';
 				wrapper.append(translated);
 				for (const element of wrapper.querySelectorAll('[id], [name]')) {
 					element.removeAttribute('id');
 					element.removeAttribute('name');
 				}
-				unit.parent.insertBefore(wrapper, unit.nodes[unit.nodes.length - 1].nextSibling);
+				const next = unit.nodes[unit.nodes.length - 1].nextSibling;
+				unit.parent.insertBefore(doc.createElement('br'), next);
+				unit.parent.insertBefore(wrapper, next);
 			} else {
 				unit.parent.insertBefore(translated, unit.nodes[0]);
 				unit.nodes.forEach((node) => unit.parent.removeChild(node));
