@@ -1,0 +1,49 @@
+name: Publish
+on:
+  push:
+    tags: ['v*.*.*']
+permissions:
+  contents: read
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org/
+      - name: Check release identity
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          node - <<'JS'
+          const pkg = require('./package.json');
+          const lock = require('./package-lock.json');
+          if (pkg.name !== 'n8n-nodes-html-tools' || lock.name !== pkg.name || lock.version !== pkg.version || lock.packages[''].version !== pkg.version || process.env.RELEASE_TAG !== `v${pkg.version}`) throw new Error('Release identity mismatch');
+          JS
+      - run: npm install --global npm@11.15.0
+      - run: npm ci --ignore-scripts
+      - run: npm run lint
+      - run: npm test
+      - name: Pack
+        id: pack
+        run: echo "file=$(npm pack --ignore-scripts --quiet)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-package
+          path: ${{ steps.pack.outputs.file }}
+          if-no-files-found: error
+      - name: Publish with provenance
+        env:
+          PACKAGE_FILE: ${{ steps.pack.outputs.file }}
+        run: npm publish "$PACKAGE_FILE" --registry https://registry.npmjs.org/ --access public --tag latest --provenance
